@@ -1,29 +1,35 @@
 import express from "express";
-import { apiRequest } from "./lib/apiClient.js";
+import predictLeadsApiClient from "./lib/PredictLeadsApiClient";
+import type { NewsEventCategory } from "./lib/predictLeadsTypes";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
 app.use(express.json());
 
-// Health check
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Example: proxy route that fetches from an external API
-app.get("/api/example", async (_req, res) => {
+app.get("/api/news-reports", async (_req, res) => {
   try {
-    // Example: fetch from JSONPlaceholder (public test API)
-    const data = await apiRequest<{ id: number; title: string }[]>(
-      "https://jsonplaceholder.typicode.com/posts?_limit=3"
-    );
+    const categories: NewsEventCategory[] = [
+      "opens_new_location",
+      "expands_offices_to",
+    ];
+    const company_location = "United Kingdom";
+
+    const data = await predictLeadsApiClient.getNewsEvents({
+      categories,
+      company_location,
+    });
     res.json({ success: true, data });
   } catch (error) {
-    console.error("API call failed:", error);
+    console.error("Failed to fetch news reports:", error);
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error:
+        error instanceof Error ? error.message : "Failed to fetch news reports",
     });
   }
 });
