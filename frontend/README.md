@@ -11,13 +11,17 @@ Minimal React (Vite) frontend with Supabase email/password login and Tailwind CS
 
    (Do not use the Supabase secret key in the frontend.)
 
-2. Install deps from the repo root:
+2. In Supabase Dashboard, ensure **email confirmations** are enabled (Auth → Providers → Email).
+
+   Also add your local dev URL (e.g. `http://localhost:5173`) to **Auth → URL Configuration** so the email verification redirect works.
+
+3. Install deps from the repo root:
 
    ```bash
    npm install
    ```
 
-3. Run the frontend:
+4. Run the frontend:
 
    ```bash
    npm run dev:frontend

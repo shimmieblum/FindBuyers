@@ -1,13 +1,21 @@
 import type { Session } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase, supabaseConfigError } from './lib/supabaseClient'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
+  const [page, setPage] = useState<'login' | 'signup'>('login')
+
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn')
   const [status, setStatus] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  const landingName = useMemo(() => {
+    const raw = session?.user.user_metadata?.name
+    return typeof raw === 'string' ? raw : null
+  }, [session])
 
   useEffect(() => {
     if (!supabase) return
@@ -25,23 +33,52 @@ function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!supabase) return
 
     setStatus(null)
+    setSubmitting(true)
 
-    const fn = mode === 'signIn' ? supabase.auth.signInWithPassword : supabase.auth.signUp
-    const { error } = await fn({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+    setSubmitting(false)
+
+    if (error) {
+      setStatus(error.message)
+    }
+  }
+
+  async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!supabase) return
+
+    setStatus(null)
+    setSubmitting(true)
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+        emailRedirectTo: window.location.origin,
+      },
+    })
+
+    setSubmitting(false)
 
     if (error) {
       setStatus(error.message)
       return
     }
 
-    if (mode === 'signUp') {
-      setStatus('Check your email to confirm your account, then sign in.')
+    if (data.session) {
+      setStatus(null)
+      return
     }
+
+    setStatus('Check your email to verify your address, then come back and sign in.')
+    setPage('login')
   }
 
   return (
@@ -77,87 +114,164 @@ function App() {
               VITE_SUPABASE_PUBLISHABLE_KEY=...
             </div>
           </div>
-        ) : !session ? (
+        ) : session ? (
           <div className="space-y-6">
-            <div className="space-y-2">
+            <div className="space-y-1">
               <h1 className="text-2xl font-semibold text-slate-50">
-                {mode === 'signIn' ? 'Login' : 'Create account'}
+                Welcome{landingName ? `, ${landingName}` : ''}
               </h1>
               <p className="text-sm text-slate-300">
-                Use email + password to continue.
+                You’re signed in as <span className="font-mono">{session.user.email}</span>
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
-              <form className="space-y-4" onSubmit={handleSubmit}>
-                <label className="block space-y-1">
-                  <div className="text-sm text-slate-200">Email</div>
-                  <input
-                    className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
-                    autoComplete="email"
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                    type="email"
-                    value={email}
-                  />
-                </label>
+              <div className="text-sm text-slate-200">Landing page</div>
+              <p className="mt-1 text-sm text-slate-300">
+                This is the post-login area. Hook your app content in here.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-semibold text-slate-50">
+                {page === 'login' ? 'Login' : 'Create account'}
+              </h1>
+              <p className="text-sm text-slate-300">
+                {page === 'login'
+                  ? 'Sign in to continue.'
+                  : 'Sign up to create an account (email verification required).'}
+              </p>
+            </div>
 
-                <label className="block space-y-1">
-                  <div className="text-sm text-slate-200">Password</div>
-                  <input
-                    className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
-                    autoComplete={mode === 'signIn' ? 'current-password' : 'new-password'}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    type="password"
-                    value={password}
-                  />
-                </label>
+            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
+              {page === 'login' ? (
+                <form className="space-y-4" onSubmit={handleLogin}>
+                  <label className="block space-y-1">
+                    <div className="text-sm text-slate-200">Email</div>
+                    <input
+                      className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
+                      autoComplete="email"
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      required
+                      type="email"
+                      value={email}
+                    />
+                  </label>
 
-                {status ? (
-                  <div className="rounded-md border border-amber-700/40 bg-amber-950/40 px-3 py-2 text-sm text-amber-200">
-                    {status}
-                  </div>
-                ) : null}
+                  <label className="block space-y-1">
+                    <div className="text-sm text-slate-200">Password</div>
+                    <input
+                      className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
+                      autoComplete="current-password"
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      type="password"
+                      value={password}
+                    />
+                  </label>
 
-                <button
-                  className="w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500"
-                  type="submit"
-                >
-                  {mode === 'signIn' ? 'Sign in' : 'Sign up'}
-                </button>
+                  {status ? (
+                    <div className="rounded-md border border-amber-700/40 bg-amber-950/40 px-3 py-2 text-sm text-amber-200">
+                      {status}
+                    </div>
+                  ) : null}
 
-                <button
-                  className="w-full rounded-md bg-slate-800 px-3 py-2 text-sm text-slate-100 hover:bg-slate-700"
-                  onClick={() => {
-                    setStatus(null)
-                    setMode((m) => (m === 'signIn' ? 'signUp' : 'signIn'))
-                  }}
-                  type="button"
-                >
-                  {mode === 'signIn'
-                    ? 'Need an account? Sign up'
-                    : 'Have an account? Sign in'}
-                </button>
-              </form>
+                  <button
+                    className="w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={submitting}
+                    type="submit"
+                  >
+                    {submitting ? 'Signing in…' : 'Sign in'}
+                  </button>
+
+                  <button
+                    className="w-full rounded-md bg-slate-800 px-3 py-2 text-sm text-slate-100 hover:bg-slate-700"
+                    onClick={() => {
+                      setStatus(null)
+                      setPage('signup')
+                    }}
+                    type="button"
+                  >
+                    Need an account? Sign up
+                  </button>
+                </form>
+              ) : (
+                <form className="space-y-4" onSubmit={handleSignup}>
+                  <label className="block space-y-1">
+                    <div className="text-sm text-slate-200">Name</div>
+                    <input
+                      className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
+                      autoComplete="name"
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Jane Doe"
+                      required
+                      type="text"
+                      value={name}
+                    />
+                  </label>
+
+                  <label className="block space-y-1">
+                    <div className="text-sm text-slate-200">Email</div>
+                    <input
+                      className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
+                      autoComplete="email"
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      required
+                      type="email"
+                      value={email}
+                    />
+                  </label>
+
+                  <label className="block space-y-1">
+                    <div className="text-sm text-slate-200">Password</div>
+                    <input
+                      className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
+                      autoComplete="new-password"
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      type="password"
+                      value={password}
+                    />
+                  </label>
+
+                  {status ? (
+                    <div className="rounded-md border border-amber-700/40 bg-amber-950/40 px-3 py-2 text-sm text-amber-200">
+                      {status}
+                    </div>
+                  ) : null}
+
+                  <button
+                    className="w-full rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={submitting}
+                    type="submit"
+                  >
+                    {submitting ? 'Creating account…' : 'Sign up'}
+                  </button>
+
+                  <button
+                    className="w-full rounded-md bg-slate-800 px-3 py-2 text-sm text-slate-100 hover:bg-slate-700"
+                    onClick={() => {
+                      setStatus(null)
+                      setPage('login')
+                    }}
+                    type="button"
+                  >
+                    Have an account? Sign in
+                  </button>
+                </form>
+              )}
             </div>
 
             <p className="text-xs text-slate-400">
               Configure Supabase by setting <code>VITE_SUPABASE_URL</code> and{' '}
               <code>VITE_SUPABASE_PUBLISHABLE_KEY</code>.
             </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <h1 className="text-2xl font-semibold text-slate-50">You’re in</h1>
-            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
-              <div className="text-sm text-slate-300">Signed in as</div>
-              <div className="mt-1 font-mono text-sm text-slate-100">
-                {session.user.email}
-              </div>
-            </div>
           </div>
         )}
       </main>
