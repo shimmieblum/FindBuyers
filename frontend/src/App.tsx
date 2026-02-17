@@ -2,12 +2,14 @@ import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import type { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
-import { supabase } from './lib/supabaseClient'
+import { supabase, supabaseConfigError } from './lib/supabaseClient'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
+    if (!supabase) return
+
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
     })
@@ -42,7 +44,19 @@ function App() {
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-10">
-        {!session ? (
+        {supabaseConfigError ? (
+          <div className="space-y-3">
+            <h1 className="text-2xl font-semibold text-slate-50">
+              Supabase not configured
+            </h1>
+            <p className="text-sm text-slate-300">{supabaseConfigError}</p>
+            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 font-mono text-xs text-slate-200">
+              VITE_SUPABASE_URL=...
+              <br />
+              VITE_SUPABASE_PUBLISHABLE_KEY=...
+            </div>
+          </div>
+        ) : !session ? (
           <div className="space-y-6">
             <div className="space-y-2">
               <h1 className="text-2xl font-semibold text-slate-50">Login</h1>
@@ -53,7 +67,7 @@ function App() {
 
             <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6">
               <Auth
-                supabaseClient={supabase}
+                supabaseClient={supabase!}
                 appearance={{ theme: ThemeSupa }}
                 providers={[]}
               />
