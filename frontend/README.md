@@ -7,7 +7,9 @@ Minimal React (Vite) frontend with Supabase email/password login and Tailwind CS
 1. Create `frontend/.env.local` (see `frontend/.env.example`) and set:
 
    - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+   (Do not use the Supabase secret key in the frontend.)
 
 2. Install deps from the repo root:
 

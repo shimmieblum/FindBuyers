@@ -61,7 +61,7 @@ function App() {
 
             <p className="text-xs text-slate-400">
               Configure Supabase by setting <code>VITE_SUPABASE_URL</code> and{' '}
-              <code>VITE_SUPABASE_ANON_KEY</code>.
+              <code>VITE_SUPABASE_PUBLISHABLE_KEY</code>.
             </p>
           </div>
         ) : (
