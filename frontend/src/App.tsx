@@ -1,9 +1,10 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import AppLayout from './components/AppLayout'
 import LandingPage from './components/LandingPage'
 import SupabaseNotConfigured from './components/SupabaseNotConfigured'
 import { useSupabaseSession } from './hooks/useSupabaseSession'
 import LoginPage from './pages/LoginPage'
+import NotFoundPage from './pages/NotFoundPage'
 import SignupPage from './pages/SignupPage'
 import RedirectIfAuthed from './routes/RedirectIfAuthed'
 import RequireAuth from './routes/RequireAuth'
@@ -53,7 +54,7 @@ function App() {
             path="signup"
           />
 
-          <Route element={<Navigate replace to="/" />} path="*" />
+          <Route element={<NotFoundPage session={session} />} path="*" />
         </Route>
       </Routes>
     </BrowserRouter>
