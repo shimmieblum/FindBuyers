@@ -1,11 +1,16 @@
 import express from "express";
+import { createV1Router } from "./api/v1/router";
 import predictLeadsApiClient from "./lib/PredictLeadsApiClient";
 import type { NewsEventCategory } from "./lib/predictLeadsTypes";
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
 
-app.use(express.json());
+app.disable("x-powered-by");
+app.set("trust proxy", 1);
+app.use(express.json({ limit: "1mb" }));
+
+app.use("/api/v1", createV1Router());
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
