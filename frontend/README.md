@@ -1,5 +1,39 @@
 # React + TypeScript + Vite
 
+Minimal React (Vite) frontend with Supabase email/password login and Tailwind CSS.
+
+Routes:
+- `/login`
+- `/signup`
+- `/` (protected; redirects to `/login`)
+
+## Setup
+
+1. Create `frontend/.env.local` (see `frontend/.env.example`) and set:
+
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+   (Do not use the Supabase secret key in the frontend.)
+
+2. In Supabase Dashboard, ensure **email confirmations** are enabled (Auth → Providers → Email).
+
+   Also add your local dev URL (e.g. `http://localhost:5173`) to **Auth → URL Configuration** so the email verification redirect works.
+
+3. Install deps from the repo root:
+
+   ```bash
+   npm install
+   ```
+
+4. Run the frontend:
+
+   ```bash
+   npm run dev:frontend
+   ```
+
+---
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
