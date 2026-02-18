@@ -2,6 +2,11 @@
 
 Minimal React (Vite) frontend with Supabase email/password login and Tailwind CSS.
 
+Routes:
+- `/login`
+- `/signup`
+- `/` (protected; redirects to `/login`)
+
 ## Setup
 
 1. Create `frontend/.env.local` (see `frontend/.env.example`) and set:
