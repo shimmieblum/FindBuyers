@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl: string | undefined = import.meta.env.VITE_SUPABASE_URL
 const supabasePublishableKey: string | undefined =
@@ -9,6 +9,6 @@ export const supabaseConfigError =
     ? 'Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY. Create frontend/.env.local (see frontend/.env.example).'
     : null
 
-export const supabase = supabaseConfigError
+export const supabase: SupabaseClient | null = supabaseConfigError
   ? null
   : createClient(supabaseUrl, supabasePublishableKey)
