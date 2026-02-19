@@ -48,6 +48,17 @@ cp backend/.env.example backend/.env
 
 - `GET /health` -- health check
 - `GET /api/news-reports` -- fetches news reports from PredictLeads
+- `POST /api/v1/user-details` -- (contract stub) create/update user-details after Supabase signup
+- `POST /api/v1/agencies` -- (contract stub) create agency (creator becomes admin)
+- `GET|PATCH|DELETE /api/v1/agencies/:agencyUuid` -- (contract stub) agency CRUD
+
+API contract (OpenAPI): `backend/openapi.yaml`
+
+Regenerate the OpenAPI spec from Zod (Zod-first):
+
+```bash
+npm run generate:openapi -w findbuyers-backend
+```
 
 ### Build
 
