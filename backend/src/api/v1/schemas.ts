@@ -80,3 +80,7 @@ export const AddAgencyUserBodySchema = z.object({
   userUuid: UuidSchema,
   role: RoleSchema,
 });
+
+export const UpdateAgencyUserRoleBodySchema = z.object({
+  role: RoleSchema,
+});

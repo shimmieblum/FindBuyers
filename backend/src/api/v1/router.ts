@@ -4,6 +4,7 @@ import {
   AgencyUuidParamsSchema,
   CreateAgencyBodySchema,
   UpdateAgencyBodySchema,
+  UpdateAgencyUserRoleBodySchema,
   UpsertUserDetailsBodySchema,
   UserUuidParamsSchema,
 } from "./schemas";
@@ -208,7 +209,18 @@ export function createV1Router(): Router {
       });
     }
 
-    // Body schema will be finalized during implementation (promote/demote roles, etc.).
+    const parsedBody = UpdateAgencyUserRoleBodySchema.safeParse(req.body);
+    if (!parsedBody.success) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid request body",
+          details: parsedBody.error.flatten(),
+        },
+      });
+    }
+
     return notImplemented(res);
   });
 

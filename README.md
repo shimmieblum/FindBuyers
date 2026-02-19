@@ -54,6 +54,12 @@ cp backend/.env.example backend/.env
 
 API contract (OpenAPI): `backend/openapi.yaml`
 
+Regenerate the OpenAPI spec from Zod (Zod-first):
+
+```bash
+npm run generate:openapi -w findbuyers-backend
+```
+
 ### Build
 
 ```bash
